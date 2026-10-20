@@ -15,14 +15,48 @@
     <h2 data-i="soon"></h2>
     <p class="note" data-i="desc"></p>
   </div>
+  <div class="card">
+    <button id="ping" data-i="btn" style="border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:999px;padding:6px 18px;cursor:pointer;font:inherit"></button>
+    <pre id="out" aria-live="polite" style="white-space:pre-wrap;word-break:break-word;margin:12px 0 0;font:inherit;font-size:.9rem"></pre>
+  </div>
 </main>
 <footer class="site" id="foot"></footer>
 <div id="tip"></div>
 <script>
 window.PAGE_TEXT={
-zh:{doc:"問答｜婚姻狀態與憂鬱、焦慮、壓力",h:"問答",soon:"即將推出",desc:"這個頁面正在準備中，敬請期待。"},
-en:{doc:"Q&A | Marital Status and Depression, Anxiety, and Stress",h:"Q&A",soon:"Coming soon",desc:"This page is under construction. Please check back later."}};
+zh:{doc:"問答｜婚姻狀態與憂鬱、焦慮、壓力",h:"問答",soon:"即將推出",desc:"這個頁面正在準備中，敬請期待。",
+btn:"測試連線",wait:"連線中…",fail:"連線失敗：",
+noUrl:"尚未設定後端網址：請打開 ask.html，把 WORKER_URL 改成你的 Worker 網址。"},
+en:{doc:"Q&A | Marital Status and Depression, Anxiety, and Stress",h:"Q&A",soon:"Coming soon",desc:"This page is under construction. Please check back later.",
+btn:"Test connection",wait:"Connecting…",fail:"Connection failed: ",
+noUrl:"Backend URL not set: open ask.html and change WORKER_URL to your Worker URL."}};
 </script>
 <script src="site.js"></script>
+<script>
+// 把這裡換成你的 Worker 網址，例如 "https://名稱.帳號.workers.dev"
+const WORKER_URL="請在這裡填入你的 Worker 網址";
+
+document.getElementById("ping").addEventListener("click",async()=>{
+  const btn=document.getElementById("ping"),out=document.getElementById("out");
+  if(!/^https?:\/\//.test(WORKER_URL)){out.textContent=tr("noUrl");return}
+  btn.disabled=true;
+  out.textContent=tr("wait");
+  try{
+    const res=await fetch(WORKER_URL,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({action:"test"})
+    });
+    const text=await res.text();
+    let shown=text;
+    try{shown=JSON.stringify(JSON.parse(text),null,2)}catch(e){}
+    out.textContent="HTTP "+res.status+"\n"+shown;
+  }catch(e){
+    out.textContent=tr("fail")+e.message;
+  }finally{
+    btn.disabled=false;
+  }
+});
+</script>
 </body>
 </html>
